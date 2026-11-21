@@ -1,0 +1,78 @@
+ <!-- ========================================= -->
+    <!--                  FOOTER                  -->
+    <!-- ========================================= -->
+    <footer>
+        <p>&copy; 2023 Sound to Species. All Rights Reserved.</p>
+    </footer>
+
+    <!-- ========================================= -->
+    <!--              JAVASCRIPT                  -->
+    <!-- ========================================= -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- LOGIN FUNCTIONALITY ---
+            const loginToggleBtn = document.getElementById('login-toggle-btn');
+            const loginPanel = document.getElementById('login-panel');
+            const loginForm = document.getElementById('login-form');
+
+            loginToggleBtn.addEventListener('click', function() {
+                if (loginPanel.style.display === 'flex') {
+                    loginPanel.style.display = 'none';
+                } else {
+                    loginPanel.style.display = 'flex';
+                }
+            });
+
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const email = document.getElementById('email').value;
+                const password = document.getElementById('password').value;
+                
+                // Send login request to backend
+                fetch('/api/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirect to admin home on successful login
+                        window.location.href = data.redirect;
+                    } else {
+                        alert('Login failed: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred during login');
+                });
+            });
+            
+            // Helper function to get CSRF token from cookies
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+
+</body>
+</html>

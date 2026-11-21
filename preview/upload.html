@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Upload — Preview</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="logo">Sound to Species</a>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="species.html">Species</a>
+        <a href="upload.html">Upload</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>Record or Upload Audio</h1>
+    <p>This is a preview UI — recording is not active in the static preview.</p>
+
+    <form id="upload-form">
+      <label>Select audio file</label>
+      <input type="file" accept="audio/*" /><br/><br/>
+      <label>Optional note</label>
+      <input type="text" placeholder="Where did you record this?" />
+      <div style="margin-top:16px;"><button type="submit">Submit (Preview)</button></div>
+    </form>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">© Sound to Species — Preview</div>
+  </footer>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

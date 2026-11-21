@@ -1,0 +1,20 @@
+:root{--bg:#0b0b0b;--muted:#bdbdbd;--accent:#39ff14;--card:#111}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#eee}
+.container{max-width:980px;margin:100px auto;padding:20px}
+.site-header{position:fixed;top:0;left:0;right:0;background:rgba(10,10,10,.95);border-bottom:1px solid #222;padding:12px}
+.site-header .container{display:flex;justify-content:space-between;align-items:center}
+.site-header .logo{font-weight:700;color:var(--accent)}
+.site-header nav a, .site-header nav button{color:var(--muted);margin-left:12px;text-decoration:none;background:none;border:none}
+.hero{padding:60px 20px;background:linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.2));border-radius:8px}
+.hero h1{font-size:28px;margin-bottom:8px}
+.cta{display:inline-block;margin-top:12px;padding:10px 14px;background:var(--accent);color:#000;border-radius:6px;text-decoration:none}
+.features{margin-top:28px}
+.cards{display:flex;gap:12px}
+.card{background:var(--card);padding:16px;border-radius:8px;flex:1}
+.species-list{display:grid;grid-template-columns:1fr;gap:12px}
+.species-item{background:var(--card);padding:14px;border-radius:8px}
+.site-footer{padding:30px 0;text-align:center;color:var(--muted);margin-top:40px}
+button{cursor:pointer}
+form input[type=file]{color:var(--muted)}
+@media(min-width:900px){.species-list{grid-template-columns:repeat(2,1fr)} .cards{flex-wrap:nowrap}}

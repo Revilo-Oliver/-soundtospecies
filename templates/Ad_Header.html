@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sound to Species</title>
+
+    <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- ========================================= -->
+    <!--              CSS STYLESHEET              -->
+    <!-- ========================================= -->
+    <style>
+        :root {
+            --bg-primary: #0c0c0c;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #222222;
+            --text-primary: #f0f0f0;
+            --text-secondary: #b0b0b0;
+            --border-color: #333333;
+
+            /* Neon Colors */
+            --neon-cyan: #00ffff;
+            --neon-pink: #ff00c8;
+            --neon-green: #39ff14;
+            --neon-yellow: #ffff00;
+            --neon-red: #ff073a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column; /* Added for footer */
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 15px rgba(0, 255, 255, 0.1);
+            position: fixed; /* Fixed to side */
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar .logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-align: center;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .sidebar nav ul li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar nav ul li a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .sidebar nav ul li a i {
+            margin-right: 12px;
+            font-size: 18px;
+            width: 20px;
+        }
+
+        .sidebar nav ul li a:hover {
+            background-color: rgba(0, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .sidebar nav ul li a.active {
+            background-color: rgba(0, 255, 255, 0.15);
+            color: var(--neon-cyan);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5), inset 0 0 5px rgba(0, 255, 255, 0.3);
+        }
+
+        .sidebar .logout-btn {
+            margin-top: auto;
+            padding: 12px;
+            background-color: var(--neon-red);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(255, 7, 58, 0.5);
+        }
+        .sidebar .logout-btn:hover {
+            box-shadow: 0 0 20px rgba(255, 7, 58, 0.8);
+            transform: translateY(-2px);
+        }
+
+        /* --- Main Content Wrapper --- */
+        .main-content-wrapper {
+            flex-grow: 1;
+            margin-left: 260px; /* Offset for sidebar */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- Header --- */
+        .top-header {
+            background-color: var(--bg-secondary);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(255, 0, 200, 0.1);
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-card);
+            padding: 8px 15px;
+            border-radius: 8px;
+            width: 300px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .search-bar:focus-within {
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .search-bar input {
+            border: none;
+            background: none;
+            outline: none;
+            width: 100%;
+            margin-left: 10px;
+            color: var(--text-primary);
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-profile span {
+            color: var(--text-secondary);
+        }
+
+        .admin-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-pink);
+        }
+
+        /* --- Content Area --- */
+        .content-area {
+            padding: 30px;
+            flex-grow: 1;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- Footer --- */
+        footer {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            text-align: center;
+            padding: 20px;
+            margin-left: 260px; /* Offset for sidebar */
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* --- Reusable Components --- */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background-color: var(--bg-card);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-card .icon {
+            font-size: 30px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+        .metric-card.users .icon { background-color: rgba(0, 255, 255, 0.1); color: var(--neon-cyan); box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
+        .metric-card.species .icon { background-color: rgba(57, 255, 20, 0.1); color: var(--neon-green); box-shadow: 0 0 10px rgba(57, 255, 20, 0.3); }
+        .metric-card.detections .icon { background-color: rgba(255, 255, 0, 0.1); color: var(--neon-yellow); box-shadow: 0 0 10px rgba(255, 255, 0, 0.3); }
+        .metric-card.complaints .icon { background-color: rgba(255, 7, 58, 0.1); color: var(--neon-red); box-shadow: 0 0 10px rgba(255, 7, 58, 0.3); }
+
+        .metric-card .details h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .metric-card .details p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .data-table {
+            width: 100%;
+            background-color: var(--bg-card);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+        .data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background-color: var(--bg-secondary);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--neon-cyan);
+            border-bottom: 1px solid var(--neon-cyan);
+        }
+        .data-table td {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+        .data-table tbody tr:hover {
+            background-color: rgba(0, 255, 255, 0.05);
+        }
+        .action-btns a {
+            text-decoration: none;
+            color: var(--neon-cyan);
+            margin-right: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .action-btns a:hover {
+            text-shadow: 0 0 5px var(--neon-cyan);
+        }
+        .action-btns a.delete { color: var(--neon-red); }
+        .action-btns a.delete:hover { text-shadow: 0 0 5px var(--neon-red); }
+
+        .btn-primary {
+            background-color: var(--neon-pink);
+            color: var(--bg-primary);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(255, 0, 200, 0.5);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 20px rgba(255, 0, 200, 0.8);
+            transform: translateY(-2px);
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .status-badge.open { background-color: rgba(255, 7, 58, 0.2); color: var(--neon-red); }
+        .status-badge.pending { background-color: rgba(255, 255, 0, 0.2); color: var(--neon-yellow); }
+        .status-badge.resolved { background-color: rgba(57, 255, 20, 0.2); color: var(--neon-green); }
+
+        /* --- Form Styling --- */
+        .form-container {
+            background-color: var(--bg-card);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 30px;
+            align-items: start;
+        }
+
+        /* Specific grid for species form */
+        .species-form-grid {
+            grid-template-columns: 200px 1fr;
+        }
+
+        /* Specific grid for news form */
+        .news-form-grid {
+            grid-template-columns: 250px 1fr;
+        }
+
+        .image-upload-area {
+            border: 2px dashed var(--neon-cyan);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .image-upload-area:hover {
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+        }
+        .image-upload-area i {
+            font-size: 40px;
+            color: var(--neon-cyan);
+            margin-bottom: 10px;
+        }
+        .image-upload-area p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        .image-upload-area input[type="file"] {
+            display: none;
+        }
+        .image-upload-area.has-image i, .image-upload-area.has-image p {
+            display: none;
+        }
+
+        /* Circular for species */
+        .image-upload-area-circular {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+        }
+        /* Square for news */
+        .image-upload-area-square {
+            width: 250px;
+            height: 250px;
+            border-radius: 8px;
+        }
+
+        .form-fields-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        .form-group label {
+            color: var(--neon-pink);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .form-actions {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+        .btn-confirm {
+            background-color: var(--neon-green);
+            box-shadow: 0 0 10px rgba(57, 255, 20, 0.5);
+        }
+        .btn-confirm:hover {
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.8);
+        }
+        .btn-cancel {
+            background-color: var(--text-secondary);
+            box-shadow: none;
+        }
+        .btn-cancel:hover {
+            background-color: #888;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .chart-placeholder {
+            background-color: var(--bg-card);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+        }
+        .chart-placeholder h2 { font-size: 18px; margin-bottom: 15px; color: var(--neon-pink); }
+        .bar-chart { display: flex; align-items: flex-end; height: 150px; gap: 10px; }
+        .bar { flex-grow: 1; background: linear-gradient(to top, var(--neon-cyan), var(--neon-pink)); border-radius: 4px 4px 0 0; position: relative; box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+        .bar span { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); font-size: 12px; white-space: nowrap; color: var(--text-secondary); }
+
+    </style>
+</head>
+<body>
+
+    <!-- ========================================= -->
+    <!--                  SIDEBAR                 -->
+    <!-- ========================================= -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-dove"></i> Sound to Species
+        </div>
+        <nav>
+            <ul>
+                <li><a href="#" class="nav-link active" data-section="home"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#" class="nav-link" data-section="species"><i class="fas fa-paw"></i> Add and Manage</a></li>
+                <li><a href="#" class="nav-link" data-section="news"><i class="fas fa-newspaper"></i> Manage News</a></li>
+                <li><a href="#" class="nav-link" data-section="uploads"><i class="fas fa-cloud-upload-alt"></i> View User Uploads</a></li>
+                <li><a href="#" class="nav-link" data-section="complaints"><i class="fas fa-exclamation-triangle"></i> View Complaints</a></li>
+            </ul>
+        </nav>
+        <button class="logout-btn" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </aside>
+
+    <!-- ========================================= -->
+    <!--            MAIN CONTENT WRAPPER          -->
+    <!-- ========================================= -->
+    <div class="main-content-wrapper">
+
+        <!-- ========================================= -->
+        <!--                  HEADER                  -->
+        <!-- ========================================= -->
+        <header class="top-header">
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search...">
+            </div>
+            <div class="admin-profile">
+                <span>Admin User</span>
+                <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Admin Avatar">
+            </div>
+        </header>

@@ -1,0 +1,361 @@
+
+    <!-- ========================================= -->
+    <!--                  FOOTER                  -->
+    <!-- ========================================= -->
+    <footer>
+        <p>&copy; 2025 Sound to Species. All Rights Reserved.</p>
+    </footer>
+    <!-- ========================================= -->
+    <!--              THUMBNAIL STYLES             -->
+    <!-- ========================================= -->
+    <style>
+        /* Thumbnails: half the size of main circle (assumes main circle ~96px) */
+        .thumb-circle { width:48px; height:48px; border-radius:50%; background:rgba(17,17,17,0.6); display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden; position:relative; }
+        .thumb-item { position:relative; flex: 0 0 auto; }
+        .thumb-item:hover .thumb-cancel { display:flex; }
+        .thumb-cancel { display:none; position:absolute; top:-6px; right:-6px; width:22px; height:22px; border-radius:50%; background:rgba(0,0,0,0.6); color:#fff; border:none; cursor:pointer; align-items:center; justify-content:center; }
+        #species-thumbs-wrapper { -webkit-overflow-scrolling: touch; }
+        /* Main image cancel button */
+        #species-image-upload-area { position:relative; }
+        #species-image-cancel { display:none; align-items:center; justify-content:center; }
+        #species-image-upload-area.has-image + #species-image-cancel { display:flex; }
+        /* show main cancel on hover too */
+        #species-image-upload-area:hover + #species-image-cancel { display:flex; }
+    </style>
+
+    <!-- ========================================= -->
+    <!--              JAVASCRIPT                  -->
+    <!-- ========================================= -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Navigation Logic ---
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const targetSectionId = this.getAttribute('data-section');
+
+                    sections.forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    document.getElementById(targetSectionId).classList.add('active');
+
+                    navLinks.forEach(navLink => {
+                        navLink.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+
+            // --- Add Species Form Logic ---
+            const speciesForm = document.getElementById('add-species-form');
+            speciesForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Species added successfully!');
+                hideSpeciesForm();
+                speciesForm.reset();
+                document.getElementById('species-image-upload-area').style.backgroundImage = '';
+                document.getElementById('species-image-upload-area').classList.remove('has-image');
+            });
+
+            // --- Create News Article Form Logic ---
+            const newsForm = document.getElementById('create-news-form');
+            newsForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                alert('Article created successfully!');
+                hideNewsForm();
+                newsForm.reset();
+                document.getElementById('news-image-upload-area').style.backgroundImage = '';
+                document.getElementById('news-image-upload-area').classList.remove('has-image');
+            });
+
+            // initialize species thumbs and main image cancel
+            try { initSpeciesThumbs(); } catch (err) { console.warn('initSpeciesThumbs failed', err); }
+            try { setupMainImageCancel(); } catch (err) { console.warn('setupMainImageCancel failed', err); }
+        });
+
+        // --- Global Functions ---
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                alert('You have been logged out successfully.');
+                // In a real app, redirect to login page
+            }
+        }
+
+        // --- Species Form Functions ---
+        function showSpeciesForm() {
+            document.getElementById('species-list-view').style.display = 'none';
+            document.getElementById('species-form-view').style.display = 'block';
+        }
+
+        function hideSpeciesForm() {
+            document.getElementById('species-list-view').style.display = 'block';
+            document.getElementById('species-form-view').style.display = 'none';
+        }
+
+        function previewSpeciesImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('species-image-upload-area');
+                output.style.backgroundImage = `url(${reader.result})`;
+                output.classList.add('has-image');
+                // store data url to allow modal zoom
+                output.dataset.img = reader.result;
+                // show cancel button
+                const cancel = document.getElementById('species-image-cancel');
+                if (cancel) cancel.style.display = 'flex';
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        // When main image clicked: if image exists, open zoom; else open file picker
+        function onMainImageClick() {
+            const area = document.getElementById('species-image-upload-area');
+            const input = document.getElementById('species-image-input');
+            if (area && area.classList.contains('has-image') && area.dataset.img) {
+                openImageModal(area.dataset.img);
+            } else if (input) {
+                input.click();
+            }
+        }
+
+        // ---------- Thumbnail uploader logic ----------
+        function initSpeciesThumbs() {
+            const container = document.getElementById('species-thumbs-wrapper');
+            if (!container) return;
+
+            // attach to existing inputs (initial slot) and circles
+            container.querySelectorAll('.thumb-item').forEach(item => {
+                ensureThumbItemHandlers(item);
+            });
+        }
+
+        function ensureThumbItemHandlers(item) {
+            const index = item.getAttribute('data-index');
+            let circle = item.querySelector('.thumb-circle');
+            let input = item.querySelector('input[type=file]');
+            let cancel = item.querySelector('.thumb-cancel');
+            if (!circle) {
+                circle = document.createElement('div');
+                circle.className = 'thumb-circle';
+                item.appendChild(circle);
+            }
+            if (!input) {
+                input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.style.display = 'none';
+                item.appendChild(input);
+            }
+            if (!cancel) {
+                cancel = document.createElement('button');
+                cancel.type = 'button';
+                cancel.className = 'thumb-cancel';
+                cancel.innerHTML = '&times;';
+                item.appendChild(cancel);
+            }
+
+            circle.addEventListener('click', () => {
+                const parent = item;
+                const has = parent.getAttribute('data-has-image') || parent.dataset.img;
+                if (has) {
+                    const url = parent.dataset.img || '';
+                    if (url) openImageModal(url);
+                } else {
+                    input.click();
+                }
+            });
+            input.addEventListener('change', handleThumbInput);
+            cancel.addEventListener('click', (e) => {
+                e.stopPropagation();
+                removeThumbItem(item);
+            });
+        }
+
+        function handleThumbInput(event) {
+            const input = event.target;
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function() {
+                const parent = input.closest('.thumb-item');
+                if (!parent) return;
+                const circle = parent.querySelector('.thumb-circle');
+                if (circle) {
+                    circle.style.backgroundImage = `url(${reader.result})`;
+                    circle.style.backgroundSize = 'cover';
+                    circle.style.backgroundPosition = 'center';
+                    parent.dataset.img = reader.result;
+                    parent.setAttribute('data-has-image','1');
+                }
+
+                // show cancel button on this item
+                const cancel = parent.querySelector('.thumb-cancel');
+                if (cancel) cancel.style.display = 'flex';
+
+                // Add a new pending slot to the right if this was the last and we have less than 10
+                const container = document.getElementById('species-thumbs-wrapper');
+                const items = Array.from(container.querySelectorAll('.thumb-item'));
+                const max = 10;
+                const lastItem = items[items.length - 1];
+                if (parent === lastItem && items.length < max) {
+                    const nextIndex = items.length;
+                    const newItem = document.createElement('div');
+                    newItem.className = 'thumb-item';
+                    newItem.setAttribute('data-index', nextIndex);
+                    newItem.style.position = 'relative';
+                    newItem.style.display = 'flex';
+                    newItem.style.flexDirection = 'column';
+                    newItem.style.alignItems = 'center';
+
+                    const thumbDiv = document.createElement('div');
+                    thumbDiv.className = 'thumb-circle';
+                    thumbDiv.id = `thumb-circle-${nextIndex}`;
+                    thumbDiv.style.width = '48px';
+                    thumbDiv.style.height = '48px';
+
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = 'image/*';
+                    fileInput.id = `species-thumb-input-${nextIndex}`;
+                    fileInput.style.display = 'none';
+
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.type = 'button';
+                    cancelBtn.className = 'thumb-cancel';
+                    cancelBtn.innerHTML = '&times;';
+
+                    newItem.appendChild(thumbDiv);
+                    newItem.appendChild(cancelBtn);
+                    newItem.appendChild(fileInput);
+                    container.appendChild(newItem);
+
+                    ensureThumbItemHandlers(newItem);
+
+                    // scroll right to show the new slot
+                    container.scrollLeft = container.scrollWidth;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeThumbItem(item) {
+            const container = document.getElementById('species-thumbs-wrapper');
+            if (!container) return;
+            // If item contains a file input, clear it
+            const input = item.querySelector('input[type=file]');
+            if (input) { input.value = ''; }
+            // remove visual
+            item.remove();
+
+            // If after removal the last item is an empty slot (no image), remove it too (pop pending)
+            const items = Array.from(container.querySelectorAll('.thumb-item'));
+            if (items.length > 0) {
+                const last = items[items.length - 1];
+                const lastCircle = last.querySelector('.thumb-circle');
+                const hasBg = lastCircle && lastCircle.style && lastCircle.style.backgroundImage;
+                if (!hasBg) {
+                    last.remove();
+                }
+            }
+        }
+
+        // ---------- Image modal (zoom) ----------
+        function openImageModal(url) {
+            let modal = document.getElementById('image-modal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'image-modal';
+                modal.style.position = 'fixed';
+                modal.style.left = '0';
+                modal.style.top = '0';
+                modal.style.width = '100%';
+                modal.style.height = '100%';
+                modal.style.display = 'flex';
+                modal.style.alignItems = 'center';
+                modal.style.justifyContent = 'center';
+                modal.style.background = 'rgba(0,0,0,0.85)';
+                modal.style.zIndex = '9999';
+
+                const container = document.createElement('div');
+                container.style.position = 'relative';
+                container.style.maxWidth = '90%';
+                container.style.maxHeight = '90%';
+
+                const img = document.createElement('img');
+                img.id = 'image-modal-img';
+                img.style.maxWidth = '100%';
+                img.style.maxHeight = '100%';
+                img.style.borderRadius = '6px';
+
+                const closeBtn = document.createElement('button');
+                closeBtn.id = 'image-modal-close';
+                closeBtn.innerHTML = '&times;';
+                closeBtn.style.position = 'absolute';
+                closeBtn.style.top = '-18px';
+                closeBtn.style.right = '-18px';
+                closeBtn.style.width = '36px';
+                closeBtn.style.height = '36px';
+                closeBtn.style.borderRadius = '50%';
+                closeBtn.style.border = 'none';
+                closeBtn.style.background = 'rgba(0,0,0,0.6)';
+                closeBtn.style.color = '#fff';
+                closeBtn.style.cursor = 'pointer';
+
+                closeBtn.addEventListener('click', () => { document.body.removeChild(modal); });
+                modal.addEventListener('click', (e) => { if (e.target === modal) document.body.removeChild(modal); });
+
+                container.appendChild(img);
+                container.appendChild(closeBtn);
+                modal.appendChild(container);
+                document.body.appendChild(modal);
+            }
+            const imgElem = document.getElementById('image-modal-img');
+            if (imgElem) imgElem.src = url;
+            modal.style.display = 'flex';
+        }
+
+        // Main image cancel behavior
+        function setupMainImageCancel() {
+            const cancel = document.getElementById('species-image-cancel');
+            const input = document.getElementById('species-image-input');
+            const area = document.getElementById('species-image-upload-area');
+            if (!cancel || !input || !area) return;
+            cancel.addEventListener('click', (e) => {
+                e.stopPropagation();
+                input.value = '';
+                area.style.backgroundImage = '';
+                area.classList.remove('has-image');
+                cancel.style.display = 'none';
+            });
+            // show cancel on hover via CSS already, but ensure it's hidden when no image
+            if (!area.classList.contains('has-image')) cancel.style.display = 'none';
+        }
+
+        // --- News Form Functions ---
+        function showNewsForm() {
+            document.getElementById('news-list-view').style.display = 'none';
+            document.getElementById('news-form-view').style.display = 'block';
+        }
+
+        function hideNewsForm() {
+            document.getElementById('news-list-view').style.display = 'block';
+            document.getElementById('news-form-view').style.display = 'none';
+        }
+
+        function previewNewsImage(event) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById('news-image-upload-area');
+                output.style.backgroundImage = `url(${reader.result})`;
+                output.classList.add('has-image');
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+    </script>
+
+</body>
+</html>
